@@ -28,7 +28,7 @@ This will install other dependencies
 
 Creating and running Files:
 
-You can either write code into /robot.py or into /main.py
+You can either write code into robot/robot.py or into robot/main.py
 
 To start the simulation run:
 
@@ -45,7 +45,7 @@ It is important to note that matplotlib cannot be running on more than one robot
 Coding the robot:
 
 Refer to https://www.studentrobotics.org/docs/ for information on the default objects and methods.
-The files in the folder ben provide extra functionality. To use them import them into your file. See main.py as an example.
+The files in the folder robot/ben provide extra functionality. To use them import them into your file. See main.py as an example.
 
 
 
