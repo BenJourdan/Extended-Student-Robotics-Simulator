@@ -28,7 +28,7 @@ This will install other dependencies
 
 Creating and running Files:
 
-You can either write code into /robot.py or into /ben/main.py
+You can either write code into /robot.py or into main.py
 
 To start the simulation run:
 
