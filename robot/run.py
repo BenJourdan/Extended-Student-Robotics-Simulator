@@ -41,24 +41,18 @@ class RobotThread(threading.Thread):
                 robot_object.zone = self.zone
                 robot_object.location = sim.arena.start_locations[self.zone]
                 robot_object.heading = sim.arena.start_headings[self.zone]
+                if len(robot_scripts)==1:
+                    robot_object.render=True
+                else:
+                    robot_object.render=False
                 return robot_object
 
         exec self.script in {'Robot': robot}
 
-if len(robot_scripts)==1:
 
-    for zone, robot in enumerate(robot_scripts):
-        thread = RobotThread(zone, robot)
-
-
-        thread.start()
-
-else:
-    for zone, robot in enumerate(robot_scripts):
-
-        thread = RobotThread(zone, robot)
-
-        thread.start()
+for zone, robot in enumerate(robot_scripts):
+    thread = RobotThread(zone, robot)
+    thread.start()
 
 sim.run()
 

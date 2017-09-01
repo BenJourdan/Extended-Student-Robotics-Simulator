@@ -7,6 +7,8 @@ from configuration import config
 from data_structures import *
 
 
+def none(*args, **kwargs):
+    return None
 
 class Map(object):
     def __init__(self,config,plt,fig,ax,mng,point_sets,line_sets):
@@ -114,24 +116,45 @@ def update_brain(data,map):
     redraw_figure(map)
 
 class Scatter(object):
-    def __init__(self,R,map,render=False):
+    def __init__(self,R,map):
         self.R=R
         self.map=map
         self.scatter_data_dict={}
 
-        for name, dic in config.point_lists_list:
-            add_point_set(name,self.map, **dic)
-            self.scatter_data_dict[name] = []
+        if self.map:
+            for name, dic in config.point_lists_list:
+                add_point_set(name,self.map, **dic)
+                self.scatter_data_dict[name] = []
 
         # select home zone and pick home coordinate
         posi = get_location_from_world(self.R.see())
         self.home, area = select_home(posi)
 
-        self.map=add_home(area,self.map)
+        if self.map:
+            self.map=add_home(area,self.map)
 
-        self.scatter_data_dict = coords_to_data("home", [self.home], self.scatter_data_dict)
-        update_brain(self.scatter_data_dict,self.map)
+            self.scatter_data_dict = coords_to_data("home", [self.home], self.scatter_data_dict)
+            update_brain(self.scatter_data_dict,self.map)
 
+    def run_on_single(function):
+        print "in dec"
+        from functools import wraps
+
+        @wraps(function)
+        def decorated_function(self,*args, **kwargs):
+            if self.map:
+                return function(self,*args, **kwargs)
+            else:
+
+                return none(self,*args,**kwargs)
+
+        return decorated_function
+
+    @run_on_single
+    def test_single(self):
+        print "this should only print in single player"
+
+    @run_on_single
     def generate_xy_from_heading(self, pos, length=12, offset=0):
 
         bearing_with_offset = (pos.bearing - offset)
@@ -149,13 +172,14 @@ class Scatter(object):
 
         return pos.x + raw_y, pos.y + raw_x
 
-
+    @run_on_single
     def update_list(self,name,data,flush=True,draw=False):
         self.scatter_data_dict=coords_to_data(name,data,self.scatter_data_dict,destroyOld=flush)
         if draw:
             update_brain(self.scatter_data_dict,self.map)
 
     # update home positon on map
+    @run_on_single
     def update_position_and_bearing(self,pos,draw=False):
 
 
@@ -184,6 +208,7 @@ class Scatter(object):
 
 
     # update the arena tokens that are visible to the robot
+    @run_on_single
     def update_visible_arena(self, data=None,coords=None,draw=False):
         if not data and not coords:
             data=self.R.see()
@@ -194,6 +219,7 @@ class Scatter(object):
         if draw:
             update_brain(self.scatter_data_dict,self.map)
 
+    @run_on_single
     def update_visible_tokens_and_all_targets(self,golds=None,silvers=None,targets=None,draw=False):
         self.scatter_data_dict["gold_toks"]=[]
         self.scatter_data_dict["silver_toks"]=[]
@@ -213,19 +239,7 @@ class Scatter(object):
 
 
 
-    def dont_render(self,function):
-        from functools import wraps
-        if self.render:
 
-            @wraps
-            def decorated_function(*args,**kwargs):
-                return function(*args,**kwargs)
-            return decorated_function
-        else:
-            @wraps
-            def decorated_function(*args,**kwargs):
-                return None
-            return decorated_function
 
 
 

@@ -15,24 +15,31 @@ from ben.movement import *
 import itertools
 
 
+def initialise_helper(config):
+
+    #This is the object through which motors are controlled, pictures are taken and analysed, constants configured
+    #and objects grabbed
+    R=Bot(Robot())
+
+    print R.R.render
+    # This creates the robots world
+
+    if R.R.render:
+        map=set_map(config)
+
+        # This creates the object which holds the dictionary of marker list names and marker lists
+        # call its methods with no parametes to take another picture or call them with a list of markers
+
+        brain_data=Scatter(R,map)
+    else:
+        brain_data=Scatter(R,False)
+
+    return R,brain_data
+
+R,brain_data=initialise_helper(config)
 
 
 
-# This creates the robots world
-
-map=set_map(config)
-
-
-#This is the object through which motors are controlled, pictures are taken and analysed, constants configured
-#
-R=Bot(Robot())
-
-
-#This creates the object which holds the dictionary of marker list names and marker lists
-#call its methods with no parametes to take another picture or call them with a list of markers
-
-#uncomment this line in single player
-brain_data=Scatter(R,map)
 
 
 #Basic methods which use my functions in the other files to locate the robots position and move from
@@ -105,8 +112,11 @@ except:
     home=locate(R)
 
 
+print brain_data.test_single()
+
 while True:
     brain_data.update_position_and_bearing(locate(R),draw=True)
+
 
     if state=="go to middle":
         print "in go to middle"
@@ -119,6 +129,7 @@ while True:
         pos, data=locate(R,retdata=True)
         toks=sanitize_toks(pos,data)
         targets=update_targets(toks,targets)
+
         if len(targets)>0:
             state="goto target"
             print "length of targets top",len(targets)
