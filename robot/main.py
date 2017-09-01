@@ -20,7 +20,9 @@ import itertools
 # This creates the robots world
 
 #uncomment this line in single player
-#set_map(config)
+
+
+set_map(config)
 
 
 #This is the object through which motors are controlled, pictures are taken and analysed, constants configured
@@ -32,7 +34,7 @@ R=Bot(Robot())
 #call its methods with no parametes to take another picture or call them with a list of markers
 
 #uncomment this line in single player
-#brain_data=scatter(R)
+brain_data=scatter(R)
 
 
 #Basic methods which use my functions in the other files to locate the robots position and move from
@@ -106,7 +108,7 @@ except:
 
 
 while True:
-    #brain_data.update_visible_tokens_and_all_targets(targets=targets, draw=True)
+    brain_data.update_position_and_bearing(locate(R),draw=True)
 
     if state=="go to middle":
         print "in go to middle"

@@ -16,7 +16,7 @@ from threading import Lock
 #create figure and plot
 
 #Remove the triple quote paranthesis in single player
-"""
+
 fig,ax = plt.subplots(num=None,figsize=(6.5,6.5),facecolor="w")
 
 #turn off x and y axes
@@ -35,8 +35,6 @@ line_sets["bearing"]=ax.plot([],[],color="blue")[0]
 line_sets["fov_left"]=ax.plot([],[],color="grey")[0]
 line_sets["fov_right"]=ax.plot([],[],color="grey")[0]
 
-
-"""
 
 
 def redraw_figure():
@@ -140,10 +138,6 @@ class scatter(object):
             bearing_with_offset -= 360
         elif bearing_with_offset < 0:
             bearing_with_offset += 360
-
-
-
-
 
         raw_x =  cos((bearing_with_offset) * (pi / 180)) * length
         raw_y =  sin(bearing_with_offset * (pi / 180)) * length
