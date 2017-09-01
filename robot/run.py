@@ -45,9 +45,20 @@ class RobotThread(threading.Thread):
 
         exec self.script in {'Robot': robot}
 
-for zone, robot in enumerate(robot_scripts):
-    thread = RobotThread(zone, robot)
-    thread.start()
+if len(robot_scripts)==1:
+
+    for zone, robot in enumerate(robot_scripts):
+        thread = RobotThread(zone, robot)
+
+
+        thread.start()
+
+else:
+    for zone, robot in enumerate(robot_scripts):
+
+        thread = RobotThread(zone, robot)
+
+        thread.start()
 
 sim.run()
 

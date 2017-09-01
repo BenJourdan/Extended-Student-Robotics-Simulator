@@ -1,8 +1,9 @@
 __author__ = 'Ben'
 from sr.robot import *
 import time
-from matplotlib import pyplot as plt
+
 import numpy as np
+
 from ben.brain_render import *
 from ben.data_structures import *
 from ben.location_and_bearing import *
@@ -19,10 +20,7 @@ import itertools
 
 # This creates the robots world
 
-#uncomment this line in single player
-
-
-set_map(config)
+map=set_map(config)
 
 
 #This is the object through which motors are controlled, pictures are taken and analysed, constants configured
@@ -34,7 +32,7 @@ R=Bot(Robot())
 #call its methods with no parametes to take another picture or call them with a list of markers
 
 #uncomment this line in single player
-brain_data=scatter(R)
+brain_data=Scatter(R,map)
 
 
 #Basic methods which use my functions in the other files to locate the robots position and move from

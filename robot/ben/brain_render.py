@@ -1,55 +1,38 @@
 from matplotlib import pyplot as plt
 import matplotlib.patches as patches
 
-import numpy as np
-
-from tornado.util import timedelta_to_seconds
 
 from location_and_bearing import *
 from configuration import config
 from data_structures import *
-import time
-import random
-from threading import Thread
-from threading import Lock
-
-#create figure and plot
-
-#Remove the triple quote paranthesis in single player
-
-fig,ax = plt.subplots(num=None,figsize=(6.5,6.5),facecolor="w")
-
-#turn off x and y axes
-ax.axes.get_xaxis().set_visible(False)
-ax.axes.get_yaxis().set_visible(False)
-
-mng = plt.get_current_fig_manager()
 
 
 
-point_sets={}
+class Map(object):
+    def __init__(self,config,plt,fig,ax,mng,point_sets,line_sets):
+        self.plt=plt
+        self.fig=fig
+        self.ax=ax
+        self.mng=mng
+        self.point_sets=point_sets
+        self.line_sets=line_sets
 
 
-line_sets={}
-line_sets["bearing"]=ax.plot([],[],color="blue")[0]
-line_sets["fov_left"]=ax.plot([],[],color="grey")[0]
-line_sets["fov_right"]=ax.plot([],[],color="grey")[0]
 
 
-
-def redraw_figure():
-    plt.draw()
-    fig.show()
-    plt.pause(0.1) #set this higher if things don't plot
+def redraw_figure(map):
+    map.plt.draw()
+    map.fig.show()
+    map.plt.pause(0.1) #set this higher if things don't plot
 
 def namestr(obj, namespace):
     return [name for name in namespace if namespace[name] is obj]
 
-def add_point_set(name,**kwargs):
+def add_point_set(name,map,**kwargs):
     #I'm not proud of this function but it works very well
     #It takes a string as well as keyword arguments and creates a scatter object with the variable name of the string
     #as well as passing the scatter object constructor the keyword arguments
-    stri='point_sets["'+name+'"]=ax.scatter([],[])'
+    stri='map.point_sets["'+name+'"]=ax.scatter([],[])'
 
     if kwargs:
         str2=""
@@ -63,11 +46,26 @@ def add_point_set(name,**kwargs):
 
 
 
-        stri='point_sets["'+name+'"]=ax.scatter([],[]' +str2+ ')'
+        stri='map.point_sets["'+name+'"]=map.ax.scatter([],[]' +str2+ ')'
     exec(stri)
 
 
 def set_map(config):
+    fig, ax = plt.subplots(num=None, figsize=(6.5, 6.5), facecolor="w")
+
+    # turn off x and y axes
+    ax.axes.get_xaxis().set_visible(False)
+    ax.axes.get_yaxis().set_visible(False)
+
+    mng = plt.get_current_fig_manager()
+
+    point_sets = {}
+
+    line_sets = {}
+    line_sets["bearing"] = ax.plot([], [], color="blue")[0]
+    line_sets["fov_left"] = ax.plot([], [], color="grey")[0]
+    line_sets["fov_right"] = ax.plot([], [], color="grey")[0]
+
 
     plt.axis("scaled")
 
@@ -78,10 +76,12 @@ def set_map(config):
 
     middlezone = patches.Circle((4,4),0.5,facecolor="none",edgecolor="g",linewidth=2)
     ax.add_patch(middlezone)
-    redraw_figure()
 
 
-def add_home(area):
+    return Map(config,plt,fig,ax,mng,point_sets,line_sets)
+
+
+def add_home(area,map):
     coord=None
     homes=[(0,5),(5,5),(0,0),(5,0)]
     if area=="topleft":
@@ -96,38 +96,41 @@ def add_home(area):
     homes.remove(coord)
 
     homezone = patches.Rectangle(coord,3,3,facecolor="none",edgecolor="b",linewidth=1)
-    ax.add_patch(homezone)
+    map.ax.add_patch(homezone)
 
     for Ehome in homes:
         enemy_home = patches.Rectangle(Ehome,3,3,facecolor="none",edgecolor="r",linewidth=1)
-        ax.add_patch(enemy_home)
-    redraw_figure()
+        map.ax.add_patch(enemy_home)
+    return map
 
 
-def update_brain(data):
+def update_brain(data,map):
     #data is a dicitonary containing the string names of the point lists to be updated
     #scat is the scatter data  in the format:
     #scat=[[x1,y1],[x2,y2],[x3,y3],...]
     for name,scat in data.iteritems():
-        point_sets[name].set_offsets(scat)
+        map.point_sets[name].set_offsets(scat)
 
-    redraw_figure()
+    redraw_figure(map)
 
-class scatter(object):
-    def __init__(self,R,render=False):
+class Scatter(object):
+    def __init__(self,R,map,render=False):
         self.R=R
+        self.map=map
         self.scatter_data_dict={}
 
         for name, dic in config.point_lists_list:
-            add_point_set(name, **dic)
+            add_point_set(name,self.map, **dic)
             self.scatter_data_dict[name] = []
 
         # select home zone and pick home coordinate
         posi = get_location_from_world(self.R.see())
-        self. home, area = select_home(posi)
-        add_home(area)
+        self.home, area = select_home(posi)
+
+        self.map=add_home(area,self.map)
+
         self.scatter_data_dict = coords_to_data("home", [self.home], self.scatter_data_dict)
-        update_brain(self.scatter_data_dict)
+        update_brain(self.scatter_data_dict,self.map)
 
     def generate_xy_from_heading(self, pos, length=12, offset=0):
 
@@ -150,7 +153,7 @@ class scatter(object):
     def update_list(self,name,data,flush=True,draw=False):
         self.scatter_data_dict=coords_to_data(name,data,self.scatter_data_dict,destroyOld=flush)
         if draw:
-            update_brain(self.scatter_data_dict)
+            update_brain(self.scatter_data_dict,self.map)
 
     # update home positon on map
     def update_position_and_bearing(self,pos,draw=False):
@@ -160,22 +163,22 @@ class scatter(object):
         #draw bearing
         x,y=self.generate_xy_from_heading(pos)
 
-        line_sets["bearing"].set_xdata([pos.x,x])
-        line_sets["bearing"].set_ydata([pos.y,y])
+        self.map.line_sets["bearing"].set_xdata([pos.x,x])
+        self.map.line_sets["bearing"].set_ydata([pos.y,y])
 
         #draw left fov:
 
         left_x,left_y=self.generate_xy_from_heading(pos,offset=-30)
-        line_sets["fov_left"].set_xdata([pos.x,left_x])
-        line_sets["fov_left"].set_ydata([pos.y,left_y])
+        self.map.line_sets["fov_left"].set_xdata([pos.x,left_x])
+        self.map.line_sets["fov_left"].set_ydata([pos.y,left_y])
 
         #draw right fov
         right_x, right_y = self.generate_xy_from_heading(pos, offset=30)
-        line_sets["fov_right"].set_xdata([pos.x, right_x])
-        line_sets["fov_right"].set_ydata([pos.y, right_y])
+        self.map.line_sets["fov_right"].set_xdata([pos.x, right_x])
+        self.map.line_sets["fov_right"].set_ydata([pos.y, right_y])
 
         if draw:
-            update_brain(self.scatter_data_dict)
+            update_brain(self.scatter_data_dict,self.map)
 
 
 
@@ -189,7 +192,7 @@ class scatter(object):
         self.scatter_data_dict = coords_to_data("arena_now", coords, self.scatter_data_dict,destroyOld=True)
 
         if draw:
-            update_brain(self.scatter_data_dict)
+            update_brain(self.scatter_data_dict,self.map)
 
     def update_visible_tokens_and_all_targets(self,golds=None,silvers=None,targets=None,draw=False):
         self.scatter_data_dict["gold_toks"]=[]
@@ -206,7 +209,7 @@ class scatter(object):
 
 
         if draw:
-            update_brain(self.scatter_data_dict)
+            update_brain(self.scatter_data_dict,self.map)
 
 
 
