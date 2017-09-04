@@ -1,237 +1,177 @@
 __author__ = 'Ben'
+
 from sr.robot import *
+
+from ben.helper_configuration import config
+from ben.helper_initialise import initialise_helper
+from ben.helper_location_and_bearing import coordinate,sanitize_toks,get_rot_to,distance,locate,goto
+
 import time
 
-import numpy as np
-
-from ben.brain_render import *
-from ben.data_structures import *
-from ben.location_and_bearing import *
-from ben.configuration import config
-from math import *
-from sr.robot import *
-from ben.IO import *
-from ben.movement import *
-import itertools
-
-
-def initialise_helper(config):
-
-    #This is the object through which motors are controlled, pictures are taken and analysed, constants configured
-    #and objects grabbed
-    R=Bot(Robot())
-
-    print R.R.render
-    # This creates the robots world
-
-    if R.R.render:
-        map=set_map(config)
-
-        # This creates the object which holds the dictionary of marker list names and marker lists
-        # call its methods with no parametes to take another picture or call them with a list of markers
-
-        brain_data=Scatter(R,map)
-    else:
-        brain_data=Scatter(R,False)
-
-    return R,brain_data
-
-R,brain_data=initialise_helper(config)
+#use calibrate to calibrate turning and driving power speeds
+from ben.helper_data_structures import calibrate
 
 
 
+#This AI is very dodge and makes remarkably stupid  but makes use of all of the inbuilt functionality such as:
+# -> Positioning code
+# -> The extened Robot class Bot
+# -> Matpltotlib Graphing functionality
+#feel free to copy/delete etc
+class Basic_AI(object):
+    def __init__(self):
+        #Robot() is defined at runtime so even though it is underlined in red by IDEs don't panic
+        self.R,self.brain_data=initialise_helper(config,Robot())
 
 
-#Basic methods which use my functions in the other files to locate the robots position and move from
-#one position to another
 
-def locate(R,retdata=False):
-    pos=None
-    dat=None
-    while pos==None:
+        self.closest=lambda tok:tok.dist
+
+        self.targets=[]
+
+        self.state = "initialise"
+        self.count = 0
         try:
-            data=R.see()
-            pos=pos_and_bearing(data)
-            dat=data
+            self.home = self.brain_data.home
         except:
-            R.turn(30)
-    if retdata:
-        return pos,dat
-    return pos
+            self.home = locate(self.R)
 
-def goto(start, end,stop=0.0,tspeed=100,dspeed=100):
+        self.pos=None
+        self.data=None
 
-    angle = get_rot_to(start,end)
+    def start(self):
+        # This code starts off the AI
+        return self.spin_search()
+
+    def draw_self(function):
+        from functools import wraps
+        @wraps(function)
+        def decorated_func(self,*args,**kwargs):
+            self.brain_data.update_position_and_bearing(locate(self.R))
+            self.brain_data.update_visible_arena(draw=True)
+            return function(self,*args,**kwargs)
+
+        return decorated_func
+
+    def draw_targets_before(function):
+        from functools import wraps
+
+        @wraps(function)
+        def decorated_function(self,*args,**kwargs):
+            self.brain_data.update_visible_tokens_and_all_targets(targets=self.targets,draw=True)
+            return function(self,*args,**kwargs)
+        return decorated_function
+
+    #Declare all AI functions here. This is necessary because a few AI functions have to be called before they are
+    #Initialised
+    def spin_search(self):
+        pass
+    def go_to_middle(self):
+        pass
+    def goto_target(self):
+        pass
+    def go_home(self):
+        pass
 
 
-    R.turn(angle,speed=tspeed)
+    def update_targets(self,tokens,targets,visible=False):
 
-    dist=distance(start,end)-stop
-    R.drive(dist,dspeed)
-
-
-
-#Basic AI- Feel free to modify and delete!
-
-closest=lambda tok:tok.dist
-
-
-def update_targets(tokens,targets,visible=False):
-
-    for i,t in enumerate(targets):
-        targets[i].visible=False
-
-    for tok in tokens:
         for i,t in enumerate(targets):
+            targets[i].visible=False
 
-            if tok.info.code==t.info.code:
-                targets[i]=tok
-                targets[i].visible=True
-                break
-        else:
-            targets.append(tok)
-            targets[-1].visible=True
+        for tok in tokens:
+            for i,t in enumerate(targets):
 
-
-
-    vis=[]
-    for t in targets:
-        if t.visible:
-            vis.append(t)
-    if visible:
-        return sorted(targets,key=closest),sorted(vis,key=closest)
-    return sorted(targets,key=closest)
-
-targets=[]
-
-state="spin search"
-count=0
-try:
-    home=brain_data.home
-except:
-    home=locate(R)
+                if tok.info.code==t.info.code:
+                    targets[i]=tok
+                    targets[i].visible=True
+                    break
+            else:
+                targets.append(tok)
+                targets[-1].visible=True
 
 
-print brain_data.test_single()
 
-while True:
-    brain_data.update_position_and_bearing(locate(R),draw=True)
+        vis=[]
+        for t in targets:
+            if t.visible:
+                vis.append(t)
+        if visible:
+            return sorted(targets,key=self.closest),sorted(vis,key=self.closest)
+        return sorted(targets,key=self.closest)
 
 
-    if state=="go to middle":
-        print "in go to middle"
-        pos=locate(R)
+
+    @draw_self
+    @draw_targets_before
+    def go_to_middle(self):
+        print "In go to middle function"
+        self.pos=locate(self.R)
         middle=coordinate(4,4)
-        goto(pos,middle,stop=2)
-        state="spin search"
-    elif state=="spin search":
-        print "in spin search"
-        pos, data=locate(R,retdata=True)
-        toks=sanitize_toks(pos,data)
-        targets=update_targets(toks,targets)
+        goto(self.pos,middle,self.R,2)
+        return self.spin_search()
 
-        if len(targets)>0:
-            state="goto target"
-            print "length of targets top",len(targets)
-            continue
+    @draw_self
+    @draw_targets_before
+    def spin_search(self):
+        print "in spin search function"
+        self.pos,self.data = locate(self.R,retdata=True)
+        toks=sanitize_toks(self.pos,self.data)
+        self.targets=self.update_targets(toks,self.targets)
+
+        if len(self.targets)>0:
+            print "length of targets top",len(self.targets)
+            return self.goto_target()
         else:
-            while len(targets)<1:
-                R.turn(25)
-                pos.bearing=(pos.bearing+25)%360
-                data=R.see()
-                toks=sanitize_toks(pos,data)
-                targets=update_targets(toks,targets)
-            state="goto target"
-            print "length of targets",len(targets)
-            continue
-    elif state=="goto target":
-        if R.grabbed==True:
-            state="go home"
-            continue
-        count+=1
+            while len(self.targets)<1:
+                self.R.turn(30)
+                self.pos.bearing=(self.pos.bearing+30)%360
+                self.data=self.R.see()
+                toks=sanitize_toks(self.pos,self.data)
+                self.targets=self.update_targets(toks,self.targets)
+            print "length of targets",len(self.targets)
+            return self.goto_target()
+
+    @draw_self
+    @draw_targets_before
+    def goto_target(self):
+        if self.R.grabbed==True:
+            return self.go_home()
+        self.count+=1
         print "in goto target"
-        print len(targets)
-        pos,data=locate(R,retdata=True)
-        target=targets[0]
-        goto(pos,target,stop=0.3)
+        print len(self.targets)
+        self.pos,self.data=locate(self.R,retdata=True)
+        target=self.targets[0]
+        goto(self.pos,target,self.R,stop=0.3)
+        self.R.grab()
 
-        R.grab()
-        print R.grabbed
-        if R.grabbed:
+        if self.R.grabbed:
             state="go home"
-            targets.remove(target)
-        else:
-            state="goto target"
-        if count>4:
+            self.targets.remove(target)
+            return self.go_home()
+
+        if self.count>4:
             try:
-                targets.remove(target)
+                self.targets.remove(target)
             except:
                 pass
-            count=0
+            self.count=0
             state="spin search"
-    elif state=="go home":
-        pos=locate(R)
-        goto(pos,home)
-        R.release()
-        state="go to middle"
+            return self.spin_search()
+        self.goto_target()
+
+    @draw_self
+    @draw_targets_before
+    def go_home(self):
+        print "in go home function"
+        self.pos=locate(self.R)
+        goto(self.pos,self.home,self.R)
+        self.R.release()
+        return self.go_to_middle()
 
 
+bob=Basic_AI()
 
+print "before bob starts"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+bob.start()

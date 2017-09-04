@@ -1,10 +1,51 @@
 
-import numpy as np
-from data_structures import coordinate
+
 from math import *
-from data_structures import arena_filter,token_filter
 from itertools import combinations
-import time
+
+
+
+MARKER_TOKEN_GOLD   = 'token_gold'
+MARKER_TOKEN_SILVER = 'token_silver'
+MARKER_ARENA = 'arena'
+MARKER_ROBOT = 'robot'
+
+token_filter = lambda m: m.info.marker_type in (MARKER_TOKEN_GOLD, MARKER_TOKEN_SILVER)
+silver_filter = lambda m:m.info.marker_type in (MARKER_TOKEN_SILVER)
+gold_filter = lambda m:m.info.marker_type in (MARKER_TOKEN_GOLD)
+arena_filter = lambda m: m.info.marker_type in (MARKER_ARENA)
+robot_filter = lambda m: m.info.marker_type in (MARKER_ROBOT)
+
+
+
+class coordinate(object):
+    def __init__(self,x,y):
+        self.x=x
+        self.y=y
+        self.bearing=None #bearing gets created later
+    def __str__(self):
+        return "coordinate at ({},{}),bearing {} degrees from North".format(str(self.x),str(self.y),str(self.bearing))
+    def __repr__(self):
+        return self.__str__()
+
+
+def coords_to_data(name,coords,dic,destroyOld=False):
+    res=[]
+    for coord in coords:
+        res.append([coord.x,coord.y])
+    old=dic[name]
+
+    if destroyOld:
+        dic[name]=res
+        return dic
+    else:
+        res+=old
+
+        res_set = set(map(tuple,res))
+        res=map(list,res_set)
+        dic[name]=res
+        return dic
+
 
 
 def distance(A_real,real_or_tuple):
@@ -296,7 +337,30 @@ def get_rot_to(A,B):
     #print "turn selected: ",val
     return val
 
+def goto(start, end,R,stop=0.0,tspeed=100,dspeed=100):
 
+    angle = get_rot_to(start,end)
+
+
+    R.turn(angle,speed=tspeed)
+
+    dist=distance(start,end)-stop
+    R.drive(dist,dspeed)
+
+
+def locate(R,retdata=False):
+    pos=None
+    dat=None
+    while pos==None:
+        try:
+            data=R.see()
+            pos=pos_and_bearing(data)
+            dat=data
+        except:
+            R.turn(15)
+    if retdata:
+        return pos,dat
+    return pos
 
 
 

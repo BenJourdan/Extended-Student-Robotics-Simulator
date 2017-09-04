@@ -1,13 +1,5 @@
+
 import inspect
-
-
-
-
-
-
-
-
-
 
 class Devarena():
     def __init__(self):
@@ -23,14 +15,15 @@ class Devarena():
         #The position of the arena tokens which it can currently see
         self.arena_now = ("arena_now",{"color": "black","marker": "o"})
         #The home position:
-        self.home=("home",{"color":"black","marker":"^"})
+        self.home=("home",{"color":"black","marker":"s"})
 
+        #tokens:
+        self.silver_toks=("silver_toks",{"color":"silver","marker":"D","s":100})
+        self.gold_toks = ("gold_toks", {"color": "gold", "marker": "D", "s": 100})
 
+        #Non-physical points of interest, e.g. Waypoints:
 
-
-        self.silver_toks=("silver_toks",{"color":"silver","marker":"s","s":100})
-        self.gold_toks = ("gold_toks", {"color": "gold", "marker": "s", "s": 100})
-
+        self.waypoints=("way_points",{"color": "black","marker":"o","s":500,"facecolors":"none"})
 
 
     def load_lists(self,dev):

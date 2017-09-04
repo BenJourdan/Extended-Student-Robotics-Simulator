@@ -2,9 +2,9 @@ from matplotlib import pyplot as plt
 import matplotlib.patches as patches
 
 
-from location_and_bearing import *
-from configuration import config
-from data_structures import *
+from ben.helper_location_and_bearing import *
+from ben.helper_configuration import config
+from ben.helper_data_structures import *
 
 
 def none(*args, **kwargs):
@@ -134,10 +134,10 @@ class Scatter(object):
             self.map=add_home(area,self.map)
 
             self.scatter_data_dict = coords_to_data("home", [self.home], self.scatter_data_dict)
+            self.map.ax.annotate("home",(self.home.x+0.05,self.home.y+0.05))
             update_brain(self.scatter_data_dict,self.map)
 
     def run_on_single(function):
-        print "in dec"
         from functools import wraps
 
         @wraps(function)
@@ -149,6 +149,25 @@ class Scatter(object):
                 return none(self,*args,**kwargs)
 
         return decorated_function
+
+
+    def draw_logic(function):
+        from functools import wraps
+        @wraps(function)
+        def decorated_function(self,*args,**kwargs):
+            if "draw" in kwargs.keys():
+                if kwargs["draw"]==True:
+                    del kwargs["draw"]
+                    val=function(self,*args,**kwargs)
+                    update_brain(self.scatter_data_dict,self.map)
+                    return val
+                else:
+                    del kwargs["draw"]
+                    return function(self,*args,**kwargs)
+            else:
+                return function(self,*args,**kwargs)
+        return decorated_function
+
 
     @run_on_single
     def test_single(self):
@@ -172,15 +191,15 @@ class Scatter(object):
 
         return pos.x + raw_y, pos.y + raw_x
 
+    @draw_logic
     @run_on_single
-    def update_list(self,name,data,flush=True,draw=False):
+    def update_list(self,name,data,flush=True):
         self.scatter_data_dict=coords_to_data(name,data,self.scatter_data_dict,destroyOld=flush)
-        if draw:
-            update_brain(self.scatter_data_dict,self.map)
 
     # update home positon on map
+    @draw_logic
     @run_on_single
-    def update_position_and_bearing(self,pos,draw=False):
+    def update_position_and_bearing(self,pos):
 
 
         self.scatter_data_dict = coords_to_data("pos", [pos], self.scatter_data_dict,destroyOld=True)
@@ -201,26 +220,21 @@ class Scatter(object):
         self.map.line_sets["fov_right"].set_xdata([pos.x, right_x])
         self.map.line_sets["fov_right"].set_ydata([pos.y, right_y])
 
-        if draw:
-            update_brain(self.scatter_data_dict,self.map)
-
-
 
 
     # update the arena tokens that are visible to the robot
+    @draw_logic
     @run_on_single
-    def update_visible_arena(self, data=None,coords=None,draw=False):
+    def update_visible_arena(self, data=None,coords=None):
         if not data and not coords:
             data=self.R.see()
         if not coords:
             coords = [marker_to_coordinate(i) for i in filter(arena_filter, data)]
         self.scatter_data_dict = coords_to_data("arena_now", coords, self.scatter_data_dict,destroyOld=True)
 
-        if draw:
-            update_brain(self.scatter_data_dict,self.map)
-
+    @draw_logic
     @run_on_single
-    def update_visible_tokens_and_all_targets(self,golds=None,silvers=None,targets=None,draw=False):
+    def update_visible_tokens_and_all_targets(self,golds=None,silvers=None,targets=None):
         self.scatter_data_dict["gold_toks"]=[]
         self.scatter_data_dict["silver_toks"]=[]
         self.scatter_data_dict["targets"]=[]
@@ -231,11 +245,6 @@ class Scatter(object):
             self.scatter_data_dict=coords_to_data("silver_toks",silvers,self.scatter_data_dict,destroyOld=True)
         if targets:
             self.scatter_data_dict=coords_to_data("targets",targets,self.scatter_data_dict,destroyOld=True)
-
-
-
-        if draw:
-            update_brain(self.scatter_data_dict,self.map)
 
 
 
