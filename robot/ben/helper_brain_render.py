@@ -241,10 +241,13 @@ class Scatter(object):
 
         if golds:
             self.scatter_data_dict=coords_to_data("gold_toks",golds,self.scatter_data_dict,destroyOld=True)
+
         if silvers:
             self.scatter_data_dict=coords_to_data("silver_toks",silvers,self.scatter_data_dict,destroyOld=True)
+
         if targets:
             self.scatter_data_dict=coords_to_data("targets",targets,self.scatter_data_dict,destroyOld=True)
+
 
 
 

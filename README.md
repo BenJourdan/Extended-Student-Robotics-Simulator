@@ -14,16 +14,17 @@ navigate to the correct Directory in a terminal:
 
 run:
 
+$> sudo apt-get install python-dev python-pip python-pygame python-yaml python-tk
+$> sudo pip install pypybox2d
+
+Then run:
+
+
 $> pip install -r requirements.txt
 
 This will install all the python dependencies
 
-Then run:
 
-$> sudo apt-get install python-dev python-pip python-pygame python-yaml
-$> sudo pip install pypybox2d
-
-This will install other dependencies
 
 
 Creating and running Files:
@@ -32,15 +33,13 @@ You can either write code into robot/robot.py or into robot/main.py
 
 To start the simulation run:
 
-$> python run.py robot.py
+$> python run.py robot_file.py
 
 To run a Simulation of multiple robots (4 max), run:
 
 $> python run.py <robot_file_1.py> <robot_file_2.py> <robot_file_3.py> <robot_file_4.py>
 
 
-
-It is important to note that matplotlib cannot be running on more than one robot file at a time. Something to do with threading prevents it from working correctly.
 
 Coding the robot:
 

@@ -18,7 +18,7 @@ class Devarena():
         self.home=("home",{"color":"black","marker":"s"})
 
         #tokens:
-        self.silver_toks=("silver_toks",{"color":"silver","marker":"D","s":100})
+        self.silver_toks=("silver_toks",{"color":"grey","marker":"D","s":100})
         self.gold_toks = ("gold_toks", {"color": "gold", "marker": "D", "s": 100})
 
         #Non-physical points of interest, e.g. Waypoints:

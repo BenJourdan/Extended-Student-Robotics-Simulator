@@ -4,7 +4,8 @@ from sr.robot import *
 
 from ben.helper_configuration import config
 from ben.helper_initialise import initialise_helper
-from ben.helper_location_and_bearing import coordinate,sanitize_toks,get_rot_to,distance,locate,goto
+from ben.helper_location_and_bearing import coordinate,sanitize_toks,get_rot_to,distance,locate,goto,silver_filter,gold_filter
+
 
 import time
 
@@ -18,6 +19,7 @@ from ben.helper_data_structures import calibrate
 # -> The extened Robot class Bot
 # -> Matpltotlib Graphing functionality
 #feel free to copy/delete etc
+
 class Basic_AI(object):
     def __init__(self):
         #Robot() is defined at runtime so even though it is underlined in red by IDEs don't panic
@@ -28,7 +30,8 @@ class Basic_AI(object):
         self.closest=lambda tok:tok.dist
 
         self.targets=[]
-
+        self.gold=[]
+        self.silver=[]
         self.state = "initialise"
         self.count = 0
         try:
@@ -58,7 +61,38 @@ class Basic_AI(object):
 
         @wraps(function)
         def decorated_function(self,*args,**kwargs):
-            self.brain_data.update_visible_tokens_and_all_targets(targets=self.targets,draw=True)
+            self.pos,self.data=locate(self.R,retdata=True)
+            toks=sanitize_toks(self.pos,self.data)
+            golds=[t for t in toks if gold_filter(t)]
+            silvers=[s for s in toks if silver_filter(s)]
+
+            for j in golds:
+
+                marked=True
+                for c,i in enumerate(self.gold):
+
+                    if i.info.code==j.info.code:
+                        self.gold[c]=j
+
+                        marked=False
+                if marked:
+                    self.gold.append(j)
+
+            for j in silvers:
+
+                marked=True
+                for c,i in enumerate(self.silver):
+
+                    if i.info.code==j.info.code:
+                        self.silver[c]=j
+
+                        marked=False
+                if marked:
+                    self.silver.append(j)
+
+
+
+            self.brain_data.update_visible_tokens_and_all_targets(targets=self.targets,silvers=self.silver,golds=self.gold,draw=True)
             return function(self,*args,**kwargs)
         return decorated_function
 
