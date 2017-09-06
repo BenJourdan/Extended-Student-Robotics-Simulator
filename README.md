@@ -14,15 +14,8 @@ navigate to the correct Directory in a terminal:
 
 run:
 
-$> sudo apt-get install python-dev python-pip python-pygame python-yaml python-tk
+$> sudo apt-get install python-dev python-pip python-pygame python-yaml python-tk python-matplotlib
 $> sudo pip install pypybox2d
-
-Then run:
-
-
-$> pip install -r requirements.txt
-
-This will install all the python dependencies
 
 
 
