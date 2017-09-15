@@ -25,7 +25,7 @@ class Map(object):
 def redraw_figure(map):
     map.plt.draw()
     map.fig.show()
-    map.plt.pause(0.1) #set this higher if things don't plot
+    map.plt.pause(0.0001) #set this higher if things don't plot
 
 def namestr(obj, namespace):
     return [name for name in namespace if namespace[name] is obj]
@@ -153,6 +153,7 @@ class Scatter(object):
 
     def draw_logic(function):
         from functools import wraps
+
         @wraps(function)
         def decorated_function(self,*args,**kwargs):
             if "draw" in kwargs.keys():
@@ -223,8 +224,9 @@ class Scatter(object):
 
 
     # update the arena tokens that are visible to the robot
-    @draw_logic
+
     @run_on_single
+    @draw_logic
     def update_visible_arena(self, data=None,coords=None):
         if not data and not coords:
             data=self.R.see()
@@ -232,8 +234,8 @@ class Scatter(object):
             coords = [marker_to_coordinate(i) for i in filter(arena_filter, data)]
         self.scatter_data_dict = coords_to_data("arena_now", coords, self.scatter_data_dict,destroyOld=True)
 
-    @draw_logic
     @run_on_single
+    @draw_logic
     def update_visible_tokens_and_all_targets(self,golds=None,silvers=None,targets=None):
         self.scatter_data_dict["gold_toks"]=[]
         self.scatter_data_dict["silver_toks"]=[]
