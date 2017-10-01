@@ -41,7 +41,7 @@ class RobotThread(threading.Thread):
                 robot_object.zone = self.zone
                 robot_object.location = sim.arena.start_locations[self.zone]
                 robot_object.heading = sim.arena.start_headings[self.zone]
-                if len(robot_scripts)==1:
+                if len(robot_scripts)==1 or self.zone==1:
                     robot_object.render=True
                 else:
                     robot_object.render=False

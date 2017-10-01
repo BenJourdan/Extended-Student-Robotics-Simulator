@@ -1,3 +1,4 @@
+from __future__ import print_function
 __author__ = 'Ben'
 
 from sr.robot import *
@@ -22,6 +23,7 @@ from ben.helper_data_structures import calibrate
 
 class Basic_AI(object):
     def __init__(self):
+
         #Robot() is defined at runtime so even though it is underlined in red by IDEs don't panic
         self.R,self.brain_data=initialise_helper(config,Robot())
 
@@ -42,15 +44,33 @@ class Basic_AI(object):
         self.pos=None
         self.data=None
 
+        #makes show do nothing instead of print to console
+        self.show=print
+        if self.R.R.render==False:
+            self.show=self.print_nothing_when_others(self.show)
+
+    def print_nothing_when_others(self,function):
+
+        from functools import wraps
+
+        @wraps(function)
+        def decorated_func(*args,**kwargs):
+            return None
+        return decorated_func
+
+
     def start(self):
         # This code starts off the AI
         return self.spin_search()
+
+
 
     def draw_self(function):
         from functools import wraps
         @wraps(function)
         def decorated_func(self,*args,**kwargs):
-            self.brain_data.update_position_and_bearing(locate(self.R))
+            temp_pos=locate(self.R)
+            self.brain_data.update_position_and_bearing(temp_pos)
             self.brain_data.update_visible_arena(draw=True)
             return function(self,*args,**kwargs)
 
@@ -139,7 +159,7 @@ class Basic_AI(object):
     @draw_self
     @draw_targets_before
     def go_to_middle(self):
-        print "In go to middle function"
+        self.show ("In go to middle function")
         self.pos=locate(self.R)
         middle=coordinate(4,4)
         goto(self.pos,middle,self.R,2)
@@ -148,13 +168,13 @@ class Basic_AI(object):
     @draw_self
     @draw_targets_before
     def spin_search(self):
-        print "in spin search function"
+        self.show ("in spin search function")
         self.pos,self.data = locate(self.R,retdata=True)
         toks=sanitize_toks(self.pos,self.data)
         self.targets=self.update_targets(toks,self.targets)
 
         if len(self.targets)>0:
-            print "length of targets top",len(self.targets)
+            self.show ("length of targets top",len(self.targets))
             return self.goto_target()
         else:
             while len(self.targets)<1:
@@ -163,7 +183,7 @@ class Basic_AI(object):
                 self.data=self.R.see()
                 toks=sanitize_toks(self.pos,self.data)
                 self.targets=self.update_targets(toks,self.targets)
-            print "length of targets",len(self.targets)
+            self.show ("length of targets",len(self.targets))
             return self.goto_target()
 
     @draw_self
@@ -172,8 +192,8 @@ class Basic_AI(object):
         if self.R.grabbed==True:
             return self.go_home()
         self.count+=1
-        print "in goto target"
-        print len(self.targets)
+        self.show ("in goto target")
+        self.show (len(self.targets))
         self.pos,self.data=locate(self.R,retdata=True)
         target=self.targets[0]
         goto(self.pos,target,self.R,stop=0.3)
@@ -197,7 +217,7 @@ class Basic_AI(object):
     @draw_self
     @draw_targets_before
     def go_home(self):
-        print "in go home function"
+        self.show ("in go home function")
         self.pos=locate(self.R)
         goto(self.pos,self.home,self.R)
         self.R.release()
@@ -206,6 +226,6 @@ class Basic_AI(object):
 
 bob=Basic_AI()
 
-print "before bob starts"
+
 
 bob.start()

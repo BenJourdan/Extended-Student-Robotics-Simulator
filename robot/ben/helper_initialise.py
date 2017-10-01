@@ -10,7 +10,7 @@ def initialise_helper(config,robot):
     #and objects grabbed
     R=Bot(robot)
 
-    print (R.R.render)
+
     # This creates the robots world
 
     if R.R.render:
