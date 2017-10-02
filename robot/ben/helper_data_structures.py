@@ -24,7 +24,7 @@ class Bot(object):
     def see(self,*args,**kwargs):
         return self.R.see(*args,**kwargs)
 
-    def drive(self,dist,speed=100,t=0.25):
+    def drive(self,dist,speed=100,t=0.1):
 
         average_speed=self.constants.d_averages[speed]
 
@@ -39,12 +39,12 @@ class Bot(object):
         self.R.motors[0].m1.power = 0
         time.sleep(t)
 
-    def turn(self,angle_right,speed=50,t=0.25):
+    def turn(self,angle_right,speed=50,t=0.1):
 
         average_speed = self.constants.t_averages[speed]
 
 
-        time.sleep(2)
+        time.sleep(t)
         if angle_right<0:
             angle_right=abs(angle_right)
             speed=-speed
@@ -176,7 +176,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
 
 
                 R.drive_raw(p,dtime)
-                time.sleep(0.5)
+                time.sleep(0.1)
                 pos2=pos_and_bearing(R.see())
                 dist=distance(pos,pos2)
                 speed=dist/dtime
@@ -185,7 +185,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
 
                 #backwards
                 R.drive_raw(-p,dtime)
-                time.sleep(0.5)
+                time.sleep(0.1)
                 pos3=pos_and_bearing(R.see())
                 dist=distance(pos2,pos3)
                 speed=dist/dtime
@@ -197,7 +197,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
 
                 #right
                 R.turn_raw(p,Ttime)
-                time.sleep(0.5)
+                time.sleep(0.1)
                 pos2=pos_and_bearing(R.see())
                 angle=bearing_diff(pos,pos2)
 
@@ -208,7 +208,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
                 #left
 
                 R.turn_raw(-p,Ttime)
-                time.sleep(0.5)
+                time.sleep(0.1)
                 pos3=pos_and_bearing(R.see())
                 angle=bearing_diff(pos2,pos3)
 

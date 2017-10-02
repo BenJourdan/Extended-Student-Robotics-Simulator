@@ -4,11 +4,11 @@ from ben.helper_brain_render import set_map,Scatter
 
 
 
-def initialise_helper(config,robot):
+def initialise_helper(config,robot,calibrate=False):
 
     #This is the object through which motors are controlled, pictures are taken and analysed, constants configured
     #and objects grabbed
-    R=Bot(robot)
+    R=Bot(robot,calib=calibrate)
 
 
     # This creates the robots world

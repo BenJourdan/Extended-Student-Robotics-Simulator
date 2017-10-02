@@ -10,8 +10,7 @@ from ben.helper_location_and_bearing import coordinate,sanitize_toks,get_rot_to,
 
 import time
 
-#use calibrate to calibrate turning and driving power speeds
-from ben.helper_data_structures import calibrate
+
 
 
 
@@ -25,7 +24,7 @@ class Basic_AI(object):
     def __init__(self):
 
         #Robot() is defined at runtime so even though it is underlined in red by IDEs don't panic
-        self.R,self.brain_data=initialise_helper(config,Robot())
+        self.R,self.brain_data=initialise_helper(config,Robot(),calibrate=False)
 
 
 
