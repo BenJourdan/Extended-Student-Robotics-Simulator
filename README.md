@@ -16,7 +16,7 @@ run:
 
 $> sudo apt-get install python-dev python-pip python-pygame python-yaml python-tk python-matplotlib
 
-$> sudo pip install pypybox2d
+$> sudo pip install setuptools pypybox2d
 
 
 
