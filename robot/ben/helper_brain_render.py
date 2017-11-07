@@ -111,7 +111,9 @@ def update_brain(data,map):
     #scat is the scatter data  in the format:
     #scat=[[x1,y1],[x2,y2],[x3,y3],...]
     for name,scat in data.iteritems():
-        map.point_sets[name].set_offsets(scat)
+
+        if scat!=[]:
+            map.point_sets[name].set_offsets(scat)
 
     redraw_figure(map)
 

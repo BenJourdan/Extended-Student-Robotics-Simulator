@@ -5,11 +5,9 @@ from ben.helper_brain_render import set_map,Scatter
 
 
 def initialise_helper(config,robot,calibrate=False):
-
     #This is the object through which motors are controlled, pictures are taken and analysed, constants configured
     #and objects grabbed
-    R=Bot(robot,calib=calibrate)
-
+    R=Bot(robot)
 
     # This creates the robots world
 
@@ -22,5 +20,12 @@ def initialise_helper(config,robot,calibrate=False):
         brain_data=Scatter(R,map)
     else:
         brain_data=Scatter(R,False)
+
+    #The plt object which the bot needs to stop time without interupting the tkinter event loop must be passed:
+    R.plt=map.plt
+
+    if calibrate:
+        R.calibrate()
+
 
     return R,brain_data

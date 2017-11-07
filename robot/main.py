@@ -27,7 +27,6 @@ class Basic_AI(object):
         self.R,self.brain_data=initialise_helper(config,Robot(),calibrate=False)
 
 
-
         self.closest=lambda tok:tok.dist
 
         self.targets=[]

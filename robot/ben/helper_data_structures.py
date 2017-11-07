@@ -12,14 +12,16 @@ class Bot(object):
         self.R=R
         self.motors=R.motors
         self.location=R.location
-        if calib:
+
+        self.constants=Calibration()
+
+    def calibrate(self):
             # This code can be used to calibrate the robot. This calibration information can then be accesed through
             # a Calibration object
 
-            calibrate(R,5,100,graduation=5,samples=8,drive_turn="drive",write=True)
-            calibrate(R,5,100,graduation=5,samples=8,drive_turn="turn",write=True)
-
-        self.constants=Calibration()
+            calibrate(self,5,100,graduation=5,samples=8,drive_turn="drive",write=True)
+            calibrate(self,5,100,graduation=5,samples=8,drive_turn="turn",write=True)
+            self.constants=Calibration()
 
     def see(self,*args,**kwargs):
         return self.R.see(*args,**kwargs)
@@ -176,7 +178,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
 
 
                 R.drive_raw(p,dtime)
-                time.sleep(0.1)
+                R.plt.pause(0.1)
                 pos2=pos_and_bearing(R.see())
                 dist=distance(pos,pos2)
                 speed=dist/dtime
@@ -185,7 +187,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
 
                 #backwards
                 R.drive_raw(-p,dtime)
-                time.sleep(0.1)
+                R.plt.pause(0.1)
                 pos3=pos_and_bearing(R.see())
                 dist=distance(pos2,pos3)
                 speed=dist/dtime
@@ -197,7 +199,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
 
                 #right
                 R.turn_raw(p,Ttime)
-                time.sleep(0.1)
+                R.plt.pause(0.1)
                 pos2=pos_and_bearing(R.see())
                 angle=bearing_diff(pos,pos2)
 
@@ -208,7 +210,7 @@ def calibrate(R,power_low,power_high,graduation=10,samples=15,drive_turn="drive"
                 #left
 
                 R.turn_raw(-p,Ttime)
-                time.sleep(0.1)
+                R.plt.pause(0.1)
                 pos3=pos_and_bearing(R.see())
                 angle=bearing_diff(pos2,pos3)
 
