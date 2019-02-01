@@ -56,8 +56,7 @@ def set_map(config):
     fig, ax = plt.subplots(num=None, figsize=(6.5, 6.5), facecolor="w")
 
     # turn off x and y axes
-    ax.axes.get_xaxis().set_visible(False)
-    ax.axes.get_yaxis().set_visible(False)
+    plt.axis("off")
 
     mng = plt.get_current_fig_manager()
 
