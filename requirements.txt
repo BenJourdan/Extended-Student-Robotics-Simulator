@@ -2,4 +2,4 @@ Box2D==2.0.2b1
 matplotlib==1.5.1
 pygame===1.9.1release
 pypybox2d==2.1.post331
-PyYAML==3.12
+PyYAML==5.1
